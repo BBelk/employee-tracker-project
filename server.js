@@ -129,8 +129,36 @@ function AddADepartment(){
             });
     });
 }
+///////////////////////////////////////////////////////////
+// const addRole = () => {
+//     const sql = `
+//     SELECT * FROM department`
+//     connection.query('SELECT * FROM department', (error, response) => {
+//         if (error) throw error;
+//         let departmentArray = [];
+//         response.forEach((department) => { deptArray.push(department.department_name); });
+//         deptArray.push('Create Department');
+//     });
+///////////////////////////////////////////////////////////
+let departmentArray = [];
+function GetDepartments(){
+    departmentArray = [];
+    db.query('SELECT * FROM department', (error, response) => {
+        if (error) throw error;
+        response.forEach((department) => { departmentArray.push(department.department_name); });
+        // deptArray.push('Create Department');
+    });
+    return departmentArray;
+    
+}
 
 function AddARole(){
+    return new Promise((resolve, reject)=>{
+        db.query('SELECT * FROM department ',  (error, response)=>{
+            if(error){
+                return reject(error);
+            }
+            response.forEach((department) => { departmentArray.push(department.name); });
     inquirer.prompt([
         {
             name: 'roleTitle',
@@ -141,11 +169,14 @@ function AddARole(){
             message: 'Enter New Role Salary'
         },
         {
+            type: 'rawlist',
             name: 'roleDepartment',
-            message: 'Enter New Department'
+            message: 'Select New Department',
+            choices: departmentArray
         }
     ])
     .then(response => {
+        response.roleDepartment = departmentArray.indexOf(response.roleDepartment);
         db.query(`INSERT INTO role (title, salary, department_id) VALUES("${response.roleTitle}", "${response.roleSalary}", "${response.roleDepartment}");`, (error, response) => {
             if (error) throw error;
             console.log('\n');
@@ -155,8 +186,67 @@ function AddARole(){
             // DoLine();
             MainMenu();
             });
+        });
     });
+});
 }
+
+//////////////////////////////////////////////////////////////////
+const updateEmployeeRole = () => {
+    let sql = `SELECT employee.id, employee.first_name, employee.last_name, role.id AS "role_id" FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id`;
+    connection.query(sql, (error, response) => {
+        if (error) throw error;
+        let employeeArray = [];
+        response.forEach((employee) => { employeeArray.push(`${employee.first_name} ${employee.last_name}`); });
+
+        let sql = `SELECT role.id, role.title FROM role`;
+        connection.query(sql, (error, response) => {
+            if (error) throw error;
+            let rolesArray = [];
+            response.forEach((role) => { rolesArray.push(role.title); });
+
+            inquirer.prompt([
+                {
+                    name: 'chosenEmployee',
+                    type: 'list',
+                    message: 'Which employee has a new role>',
+                    choices: employeeArray
+                },
+                {
+                    name: 'chosenRole',
+                    type: 'list',
+                    message: 'What is their new role?',
+                    choices: rolesArray
+                }
+            ])
+                .then((answer) => {
+                    let newTitleId, employeeId;
+                    response.forEach((role) => {
+                        if (answer.chosenRole === role.title) {
+                            newTitleId = role.id;
+                        }
+                    });
+                    response.forEach((employee) => {
+                        if (answer.chosenEmployee === `${employee.first_name} ${employee.last_name}`) {
+                            employeeId = employee.id;
+                        }
+                    });
+                    let sqls = `UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`;
+                    connection.query(
+                        sqls,
+                        [newTitleId, employeeId], (error) => {
+                            if (error) throw error;
+                            console.log(`=====================================================`);
+                            console.log(`Employee Role Updated`);
+                            console.log(`=====================================================`);
+                            promptUser();
+                        }
+                    );
+                });
+        });
+    });
+};
+//////////////////////////////////////////////////////////////////
 
 function AddAnEmployee(){
     inquirer.prompt([
