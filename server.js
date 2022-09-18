@@ -1,5 +1,8 @@
 const express = require('express');
 const inquirer = require('inquirer');
+let mysql = require('mysql2');
+//  mysql = require('mysql2/promise');
+const cTable = require('console.table');
 const path = require('path');
 const app = express();
 app.use(express.json());
@@ -10,89 +13,131 @@ const PORT = process.env.PORT || 3001;
 
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+console.log(`Server running on port ${PORT}`);
+});
+function DoLine(){
+    console.log(`------------------------------------------------------`);
+}
+let db;
+async function Initialize(){
+db = await mysql.createConnection(
+{
+    host: 'localhost',
+    // MySQL username,
+    user: 'root',
+    // TODO: Add MySQL password
+    password: '',
+    database: 'employee_db'
+},
+console.log(`Connected to the employee_db database.`));
+MainMenu();
+}
 
 
-  
-const internQuestions = [
-    {
-        name: 'newName',
-        message: 'What is the Interns name?',
-    },
-    {
-        input: 'number',
-        name: 'newId',
-        message: 'What is the Interns ID?',
-        validate: (answer) => {
-            if (isNaN(answer)) {
-              return "Please enter a number";
-            }
-            return true;
-          },
-    },
-    {
-        name: 'newEmail',
-        message: 'What is the Interns email?',
-    },
-    {
-        name: 'newSchool',
-        message: 'What is the Interns school name?',
-    },
-    {
-        name: 'doNext',
-        type: 'list',
-        choices:[
-            'Add Engineer',
-            'Add Another Intern',
-            'Done',
-        ],
-        message: 'Add new employees or are you done?',
-    }
+const startQuestions = [
+{
+    name: 'doNext',
+    type: 'list',
+    choices:[
+        'View All Departments', 
+        'View All Roles',
+        'View All Employees',
+        'Add A Department', 
+        'Add A Role', 
+        'Add An Employee', 
+        'Update An Employee Role',
+    ],
+    message: 'Select an Option',
+}
 ];
 
-teamArray = [];
+Initialize();
 
-  doInquirer(managerQuestions, 0);
+// db.query('SELECT * FROM employee', (error, response) => {
+//     if (error) throw error;
+//     doLine;
+//     console.table(response);
+//     doLine;
+//     });
 
-  function doInquirer(newQuestions, roleInt){
-      inquirer.prompt(newQuestions)
-      .then(response => {
-  
-          if(roleInt == 0){
-              var newManager = new Manager(response.newName, response.newId, response.newEmail, response.newOfficeNumber);
-              teamArray.push(newManager);
-          }
-  
-          if(roleInt == 1){
-              var newEngineer = new Engineer(response.newName, response.newId, response.newEmail, response.newGithub);
-              teamArray.push(newEngineer);
-          }
-  
-          if(roleInt == 2){
-              var newIntern = new Intern(response.newName, response.newId, response.newEmail, response.newSchool);
-              teamArray.push(newIntern);
-          }
-  
-  
-  
-  
-  
-          // teamArray.push(response);
-          // console.log(response);
-          if(response.doNext == "Done"){
-              FinishedTeam(teamArray);
-              // console.log("ALL DONE");
-              // console.log(teamArray);
-              // console.log(JSON.stringify(teamArray));
-          }
-          if(response.doNext == ("Add Engineer") || response.doNext == ("Add Another Engineer")){
-              // console.log("Add Engineer");
-              doInquirer(engineerQuestions, 1);
-          }
-          if(response.doNext == ("Add Intern") || response.doNext == ("Add Another Intern")){
-              // console.log("Add Intern");
-              doInquirer(internQuestions, 2);
-          }
-      });
-  }
+function MainMenu(){
+    inquirer.prompt(startQuestions)
+    .then(response => {
+    // console.log(response);
+    if(response.doNext == "View All Departments"){ViewAllDepartments();}
+    if(response.doNext == "View All Roles"){ViewAllRoles();}
+    if(response.doNext == "View All Employees"){ViewAllEmployess();}
+    if(response.doNext == "Add A Department"){AddADepartment();}
+    if(response.doNext == "Add A Role"){AddARole();}
+    if(response.doNext == "Add An Employee"){AddAnEmployee();}
+    if(response.doNext == "Update An Employee Role"){UpdateAnEmployeeRole();}
+});
+}
+
+function ViewAllDepartments(){
+    db.query('SELECT * FROM department', (error, response) => {
+    if (error) throw error;
+    console.log('\n');
+    console.log("DEPARTMENTS");
+    DoLine();
+    console.table(response);
+    DoLine();
+    MainMenu();
+    });
+}
+
+function ViewAllRoles(){
+    db.query('SELECT * FROM role', (error, response) => {
+        if (error) throw error;
+        console.log('\n');
+        console.log("ROLES");
+        DoLine();
+        console.table(response);
+        DoLine();
+        MainMenu();
+        });
+}
+
+function ViewAllEmployess(){
+    db.query('SELECT * FROM employee', (error, response) => {
+        if (error) throw error;
+        console.log('\n');
+        console.log("EMPLOYEES");
+        DoLine();
+        console.table(response);
+        DoLine();
+        MainMenu();
+        });
+}
+
+function AddADepartment(){
+    inquirer.prompt([
+        {
+            name: 'departmentName',
+            message : 'Enter New Department Name'
+        }
+    ])
+    .then(response => {
+        db.query(`INSERT INTO department (name) VALUES("${response.departmentName}");`, (error, response) => {
+            if (error) throw error;
+            console.log('\n');
+            console.log("Department added succesfully");
+            DoLine();
+            console.table(response);
+            DoLine();
+            MainMenu();
+            });
+    });
+}
+
+function AddARole(){
+    // inquirer.prompt
+}
+
+function AddAnEmployee(){
+    // inquirer.prompt
+}
+
+function UpdateAnEmployeeRole(){
+    // inquirer.prompt
+}
