@@ -110,8 +110,9 @@ function ViewAllEmployees(){
             // console.log("ROLE ARRAY " + roleArray);
             // console.log("MANAGER NAME ARRAY " + managerNameArray);
            
-    let stringifiedValues = JSON.stringify("managerNameArray[employee.manager_id]");
-    db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary AS salary, "${stringifiedValues}" AS manager_name FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id ORDER BY id ASC;`, (error, response) => {
+    // let stringifiedValues = JSON.stringify("managerNameArray[employee.manager_id]");
+    // ${managerNameArray[employee.manager_id]}
+    db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary AS salary, employee.manager_id AS manager_id FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id ORDER BY id ASC;`, (error, response) => {
         if (error) throw error;
         console.log('\n');
         console.log("EMPLOYEES");
