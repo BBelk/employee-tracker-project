@@ -108,10 +108,14 @@ function ViewAllEmployees(){
             }
             // response.forEach((role) => { roleArray.push(role.title); });
             // console.log("ROLE ARRAY " + roleArray);
-            // console.log("MANAGER NAME ARRAY " + managerNameArray);
+            console.log("MANAGER NAME ARRAY " + managerNameArray);
+            console.log("MANAGER ID ARRAY " + managerIdArray);
            
     // let stringifiedValues = JSON.stringify("managerNameArray[employee.manager_id]");
     // ${managerNameArray[employee.manager_id]}
+    // "${managerNameArray["1"]}"
+    // managerNameArray[managerIdArray.indexOf(employee.manager_id)]
+    // "${managerNameArray[managerIdArray.indexOf(employee.manager_id)]}"
     db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary AS salary, employee.manager_id AS manager_id FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id ORDER BY id ASC;`, (error, response) => {
         if (error) throw error;
         console.log('\n');
@@ -189,7 +193,7 @@ let managerNameArray = [];
 let managerIdArray = [];
 
 function GetManagerNames(){
-    // return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject)=>{
         // managerNameArray = ["NULL"];
         managerIdArray = ["NULL"];
         db.query('SELECT * FROM employee ',  (error, response)=>{
@@ -197,10 +201,11 @@ function GetManagerNames(){
                 return reject(error);
             }
             response.forEach((employee) => {
-                if(employee.manager_id == null) 
+                if(employee.manager_id == null){
                 managerNameArray.push(employee.first_name + " " + employee.last_name);
-                managerIdArray.push(employee.id); });
+                managerIdArray.push(employee.id); }});
             });
+        });
     }
 
 
