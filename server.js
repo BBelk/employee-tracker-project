@@ -51,6 +51,7 @@ const startQuestions = [
         'Update An Employee Role',
         'Update An Employee Manager',
         'View Employees by Manager',
+        'View Employees by Department',
     ],
     message: 'Select an Option',
 }
@@ -70,6 +71,7 @@ function MainMenu(){
     if(response.doNext == "Update An Employee Role"){UpdateAnEmployeeRole();}
     if(response.doNext == "Update An Employee Manager"){UpdateAnEmployeeManager();}
     if(response.doNext == "View Employees by Manager"){GetEmployeesByManager();}
+    if(response.doNext == "View Employees by Department"){GetEmployeesByDepartment();}
 });
 }
 
@@ -385,7 +387,7 @@ function GetEmployeesByManager(){
                 {
                     name: 'chosenManager',
                     type: 'rawlist',
-                    message: 'Choose New Manager to view their Employees',
+                    message: 'Choose Manager to view their Employees',
                     choices: managerNameArray
                 },
             ])
@@ -402,6 +404,51 @@ function GetEmployeesByManager(){
                             DoLine();
                             MainMenu();
                 });
+            });
+        });
+    });
+}
+
+function GetEmployeesByDepartment(){
+    let departmentArray = [];
+    // managerIdArray = [];
+    return new Promise((resolve, reject)=>{
+
+        // managerIdArray = ["NULL"];
+        db.query('SELECT * FROM department',  (error, response)=>{
+            if(error){
+                return reject(error);
+            }
+            response.forEach((department) => { departmentArray.push(department.name); });
+            
+   
+            inquirer.prompt([
+                {
+                    name: 'chosenDepartment',
+                    type: 'rawlist',
+                    message: 'Choose Department to view its Employees',
+                    choices: departmentArray
+                },
+            ])
+            .then(answers => {
+                let newDepartmentId = departmentArray.indexOf(answers.chosenDepartment) + 1;
+                // managerIdArray[managerNameArray.indexOf(answers.chosenManager)];
+                db.query('SELECT id FROM role WHERE role.department_id = ?', newDepartmentId, (error, response)=>{
+                    if(error){
+                        return reject(error);
+                    }
+                    db.query('SELECT * FROM employee WHERE employee.role_id = ?', response, (error, response2)=>{
+                        if(error){
+                            return reject(error);
+                        }
+                    console.log(`\n`);
+                            DoLine();
+                            console.log(`Employees of Department: ${answers.chosenDepartment}`);
+                            console.table(response2);
+                            DoLine();
+                            MainMenu();
+                });
+            });
             });
         });
     });
