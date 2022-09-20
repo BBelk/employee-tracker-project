@@ -57,13 +57,6 @@ const startQuestions = [
 
 Initialize();
 
-// db.query('SELECT * FROM employee', (error, response) => {
-//     if (error) throw error;
-//     doLine;
-//     console.table(response);
-//     doLine;
-//     });
-
 function MainMenu(){
     inquirer.prompt(startQuestions)
     .then(response => {
@@ -111,10 +104,6 @@ function ViewAllEmployees(){
                 return reject(error);
             }
 
-            // console.log("MANAGER NAME ARRAY " + managerNameArray);
-            // console.log("MANAGER ID ARRAY " + managerIdArray);
-           
-    // "${managerNameArray[managerIdArray.indexOf(employee.manager_id)]}"
     db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary AS salary, employee.manager_id AS manager_id FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id ORDER BY id ASC;`, (error, response) => {
         if (error) throw error;
         console.log('\n');
@@ -178,8 +167,6 @@ function AddARole(){
             console.log('\n');
             console.log("Role added succesfully");
             DoLine();
-            // console.table(response);
-            // DoLine();
             MainMenu();
             });
         });
@@ -187,13 +174,13 @@ function AddARole(){
 });
 }
 
-// let roleArray = [];
+
 let managerNameArray = [];
 let managerIdArray = [];
 
 function GetManagerNames(){
     return new Promise((resolve, reject)=>{
-        // managerNameArray = ["NULL"];
+
         managerIdArray = ["NULL"];
         db.query('SELECT * FROM employee ',  (error, response)=>{
             if(error){
@@ -218,8 +205,7 @@ function AddAnEmployee(){
                 return reject(error);
             }
             response.forEach((role) => { roleArray.push(role.title); });
-            // console.log("ROLE ARRAY " + roleArray);
-            // console.log("MANAGER NAME ARRAY " + managerNameArray);
+
     inquirer.prompt([
         {
             name: 'employeeFirstName',
@@ -245,18 +231,17 @@ function AddAnEmployee(){
     .then(response => {
         let managerMaybeNull = "";
         managerMaybeNull = managerIdArray[managerNameArray.indexOf(response.employeeManager)];
-        // console.log(roleArray + "THIS IS THE ROLE ARRAY");
+
         response.employeeRole = roleArray.indexOf(response.employeeRole) + 1;
-        // console.log(response.employeeRole + "THIS IS THE CHOSEN ROLE ARRAY INDEX");
+
         if(response.employeeManager != "NULL"){
-            // managerMaybeNull = NULL;
+
         db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES("${response.employeeFirstName}", "${response.employeeLastName}", "${response.employeeRole}", "${managerMaybeNull}");`, (error, response) => {
             if (error) throw error;
             console.log('\n');
             console.log("Employee added succesfully");
             DoLine();
-            // console.table(response);
-            // DoLine();
+
             MainMenu();
             });
         }else{
@@ -265,8 +250,7 @@ function AddAnEmployee(){
                 console.log('\n');
                 console.log("Employee added succesfully");
                 DoLine();
-                // console.table(response);
-                // DoLine();
+  
                 MainMenu();
                 });
             }
@@ -286,7 +270,7 @@ function UpdateAnEmployeeRole(){
             if (error) throw error;
             let roleArray = [];
             response.forEach((role) => { roleArray.push(role.title); });
-            // console.log("ROLE ARRAY: " + roleArray);
+
 
             inquirer.prompt([
                 {
@@ -306,12 +290,9 @@ function UpdateAnEmployeeRole(){
                     let newTitleId, employeeId;
                     managerIdArray[managerNameArray.indexOf(answers.chosenManager)]
                     newTitleId = roleArray.indexOf(answers.chosenRole) + 1;
-                    // console.log("CHOSEN ROLE ID IS " + newTitleId + "   " + answers.chosenRole);
-                    // console.log("array role is " + roleArray.indexOf(answers.chosenRole) + 1);
+
                   
                     employeeId = employeeArray.indexOf(answers.chosenEmployee) + 1;
-                    // console.log("CHOSEN EMPLOYEE " + employeeId + "    " + answers.chosenEmployee);
-                    // console.log("employee array is " + employeeArray.indexOf(answers.chosenEmployee) + 1);
                     
                     db.query(`UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`, [newTitleId, employeeId], (error) => {
                             if (error) throw error;
@@ -319,7 +300,6 @@ function UpdateAnEmployeeRole(){
                             DoLine();
                             console.log(`Employee Role Updated`);
                             DoLine();
-                            // promptUser();
                             MainMenu();
                         }
                     );
@@ -359,14 +339,14 @@ function UpdateAnEmployeeManager(){
                     let newManagerId, employeeId;
                     
                     newManagerId = managerIdArray[managerNameArray.indexOf(answers.chosenManager)];
-                    // console.log(newManagerId + ": IS NEW MANAGER ID");
+
 
                     response.forEach((employee) => {
                         if (answers.chosenEmployee === `${employee.first_name}` + " " + `${employee.last_name}`) {
                             employeeId = employee.id;
                         }
                     });
-                    // console.log('CHOSEN EMPLOYEE IS' + employeeId);
+    
                     
                     db.query(`UPDATE employee SET employee.manager_id = ? WHERE employee.id = ?`, [newManagerId, employeeId], (error) => {
                             if (error) throw error;
@@ -374,7 +354,6 @@ function UpdateAnEmployeeManager(){
                             DoLine();
                             console.log(`Employee Manager Updated`);
                             DoLine();
-                            // promptUser();
                             MainMenu();
                         }
                     );

@@ -19,8 +19,11 @@ VALUES
 ("Robert", "Robertson",  1, null),
 ("Sally", "O'Malley", 2, 1),
 ("Taika", "Waititi", 3, 2),
+("Rhys", "Darby", 3, 2),
 ("Anna", "Banana", 4, null),
-("Jimminy", "Cricket", 5, 4),
+("Jimminy", "Cricket", 5, 5),
+("Gorgoth", "The Destroyer", 5, 5),
 ("Fred", "Flintstone", 6, null),
-("Barney", "Rubble", 7, 6);
+("Barney", "Rubble", 7, 8),
+("BamBam", "Rubble", 7, 8);
 
