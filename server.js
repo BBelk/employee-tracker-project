@@ -411,6 +411,7 @@ function GetEmployeesByManager(){
 
 function GetEmployeesByDepartment(){
     let departmentArray = [];
+    let departmentIdArray = [];
     // managerIdArray = [];
     return new Promise((resolve, reject)=>{
 
@@ -419,7 +420,9 @@ function GetEmployeesByDepartment(){
             if(error){
                 return reject(error);
             }
-            response.forEach((department) => { departmentArray.push(department.name); });
+            response.forEach((department) => { departmentArray.push(department.name);
+            departmentIdArray.push(department.id); });
+            
             
    
             inquirer.prompt([
@@ -432,22 +435,20 @@ function GetEmployeesByDepartment(){
             ])
             .then(answers => {
                 let newDepartmentId = departmentArray.indexOf(answers.chosenDepartment) + 1;
-                // managerIdArray[managerNameArray.indexOf(answers.chosenManager)];
-                db.query('SELECT id FROM role WHERE role.department_id = ?', newDepartmentId, (error, response)=>{
+                console.log("NEW DEPARTMENT ID: " + newDepartmentId);
+                /////////////////////
+                db.query('SELECT employee.id,employee.first_name,employee.last_name,role.title, role.salary FROM employee JOIN role on employee.role_id = role.id WHERE role.department_id = ?;', newDepartmentId, (error, response1)=>{
                     if(error){
                         return reject(error);
                     }
-                    db.query('SELECT * FROM employee WHERE employee.role_id = ?', response, (error, response2)=>{
-                        if(error){
-                            return reject(error);
-                        }
+                    // console.table(response1);
                     console.log(`\n`);
                             DoLine();
                             console.log(`Employees of Department: ${answers.chosenDepartment}`);
-                            console.table(response2);
+                            console.table(response1);
                             DoLine();
                             MainMenu();
-                });
+                    
             });
             });
         });
