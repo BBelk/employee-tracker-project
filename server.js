@@ -46,6 +46,7 @@ const startQuestions = [
         'Add A Role', 
         'Add An Employee', 
         'Update An Employee Role',
+        'Update An Employee Manager',
     ],
     message: 'Select an Option',
 }
@@ -63,7 +64,6 @@ Initialize();
 function MainMenu(){
     inquirer.prompt(startQuestions)
     .then(response => {
-    // console.log(response);
     if(response.doNext == "View All Departments"){ViewAllDepartments();}
     if(response.doNext == "View All Roles"){ViewAllRoles();}
     if(response.doNext == "View All Employees"){ViewAllEmployees();}
@@ -71,6 +71,7 @@ function MainMenu(){
     if(response.doNext == "Add A Role"){AddARole();}
     if(response.doNext == "Add An Employee"){AddAnEmployee();}
     if(response.doNext == "Update An Employee Role"){UpdateAnEmployeeRole();}
+    if(response.doNext == "Update An Employee Manager"){UpdateAnEmployeeManager();}
 });
 }
 
@@ -87,7 +88,7 @@ function ViewAllDepartments(){
 }
 
 function ViewAllRoles(){
-    db.query('SELECT role.title, role.id, department.name AS department, role.salary FROM role INNER JOIN department ON role.department_id = department.id;', (error, response) => {
+    db.query('SELECT role.title, role.id, department.name AS department, role.salary FROM role LEFT JOIN department ON role.department_id = department.id;', (error, response) => {
         if (error) throw error;
         console.log('\n');
         console.log("ROLES");
@@ -106,15 +107,10 @@ function ViewAllEmployees(){
             if(error){
                 return reject(error);
             }
-            // response.forEach((role) => { roleArray.push(role.title); });
-            // console.log("ROLE ARRAY " + roleArray);
+
             console.log("MANAGER NAME ARRAY " + managerNameArray);
             console.log("MANAGER ID ARRAY " + managerIdArray);
            
-    // let stringifiedValues = JSON.stringify("managerNameArray[employee.manager_id]");
-    // ${managerNameArray[employee.manager_id]}
-    // "${managerNameArray["1"]}"
-    // managerNameArray[managerIdArray.indexOf(employee.manager_id)]
     // "${managerNameArray[managerIdArray.indexOf(employee.manager_id)]}"
     db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary AS salary, employee.manager_id AS manager_id FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id ORDER BY id ASC;`, (error, response) => {
         if (error) throw error;
@@ -275,12 +271,12 @@ function AddAnEmployee(){
 }
 
 function UpdateAnEmployeeRole(){
-   
+    return new Promise((resolve, reject)=>{
     db.query(`SELECT * FROM employee`, (error, response) => {
         if (error) throw error;
         let employeeArray = [];
-        response.forEach((employee) => { employeeArray.push(`${employee.first_name}` + " " +  `${employee.last_name}`); });
-
+        response.forEach((employee) => { employeeArray.push(`${employee.first_name}` + " " + `${employee.last_name}`); });
+        return new Promise((resolve, reject)=>{
         db.query(`SELECT * FROM role`, (error, response) => {
             if (error) throw error;
             let roleArray = [];
@@ -288,7 +284,7 @@ function UpdateAnEmployeeRole(){
 
             inquirer.prompt([
                 {
-                    name: 'pickEmployee',
+                    name: 'chosenEmployee',
                     type: 'list',
                     message: 'Choose Which Employee To Assign New Role',
                     choices: employeeArray
@@ -307,17 +303,75 @@ function UpdateAnEmployeeRole(){
                             newTitleId = role.id;
                         }
                     });
+                    console.log("CHOSEN ROLE ID IS " + newTitleId);
+                    // response.forEach((employee) => {
+                    //     if (answers.chosenEmployee === `${employee.first_name}` + " " + `${employee.last_name}`) {
+                    //         employeeId = employee.id;
+                    //     }
+                    // });
+                    employeeId = employeeArray.indexOf(answers.chosenEmployee) + 1;
+                    console.log("CHOSEN EMPLOYEE " + employeeId);
+                    
+                    db.query(`UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`, [newTitleId, employeeId], (error) => {
+                            if (error) throw error;
+                            console.log(`\n`);
+                            DoLine();
+                            console.log(`Employee Role Updated`);
+                            DoLine();
+                            // promptUser();
+                            MainMenu();
+                        }
+                    );
+                });
+        });
+    }); });
+});
+    
+}
+function UpdateAnEmployeeManager(){
+   
+    managerNameArray= ["NULL"];
+    GetManagerNames();
+    return new Promise((resolve, reject)=>{
+        db.query('SELECT * FROM employee ',  (error, response)=>{
+            if(error){
+                return reject(error);
+            }
+            let employeeArray = [];
+        response.forEach((employee) => { employeeArray.push(`${employee.first_name}` + " " + `${employee.last_name}`); });
+
+            inquirer.prompt([
+                {
+                    name: 'chosenEmployee',
+                    type: 'list',
+                    message: 'Choose Which Employee To Assign New Role',
+                    choices: employeeArray
+                },
+                {
+                    name: 'chosenManager',
+                    type: 'list',
+                    message: 'Choose New Manager, if no manager select NULL',
+                    choices: managerNameArray
+                }
+            ])
+                .then((answers) => {
+                    let newManagerId, employeeId;
+                    
+                    newManagerId = managerIdArray[managerNameArray.indexOf(answers.chosenManager)];
+                    console.log(newManagerId + ": IS NEW MANAGER ID");
+
                     response.forEach((employee) => {
                         if (answers.chosenEmployee === `${employee.first_name}` + " " + `${employee.last_name}`) {
                             employeeId = employee.id;
                         }
                     });
+                    console.log('CHOSEN EMPLOYEE IS' + employeeId);
                     
-                    db.query(`UPDATE employee SET employee.role_id = ? WHERE employee.id = ?;`, [newTitleId, employeeId], (error) => {
+                    db.query(`UPDATE employee SET employee.manager_id = ? WHERE employee.id = ?`, [newManagerId, employeeId], (error) => {
                             if (error) throw error;
                             console.log(`\n`);
                             DoLine();
-                            console.log(`Employee Role Updated`);
+                            console.log(`Employee Manager Updated`);
                             DoLine();
                             // promptUser();
                             MainMenu();
