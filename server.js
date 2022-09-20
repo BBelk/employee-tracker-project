@@ -40,7 +40,7 @@ MainMenu();
 const startQuestions = [
 {
     name: 'doNext',
-    type: 'list',
+    type: 'rawlist',
     choices:[
         'View All Departments', 
         'View All Roles',
@@ -50,6 +50,7 @@ const startQuestions = [
         'Add An Employee', 
         'Update An Employee Role',
         'Update An Employee Manager',
+        'View Employees by Manager',
     ],
     message: 'Select an Option',
 }
@@ -68,6 +69,7 @@ function MainMenu(){
     if(response.doNext == "Add An Employee"){AddAnEmployee();}
     if(response.doNext == "Update An Employee Role"){UpdateAnEmployeeRole();}
     if(response.doNext == "Update An Employee Manager"){UpdateAnEmployeeManager();}
+    if(response.doNext == "View Employees by Manager"){GetEmployeesByManager();}
 });
 }
 
@@ -182,7 +184,7 @@ function GetManagerNames(){
     return new Promise((resolve, reject)=>{
 
         managerIdArray = ["NULL"];
-        db.query('SELECT * FROM employee ',  (error, response)=>{
+        db.query('SELECT * FROM employee WHERE employee.manager_id IS NULL ',  (error, response)=>{
             if(error){
                 return reject(error);
             }
@@ -330,7 +332,7 @@ function UpdateAnEmployeeManager(){
                 },
                 {
                     name: 'chosenManager',
-                    type: 'list',
+                    type: 'rawlist',
                     message: 'Choose New Manager, if no manager select NULL',
                     choices: managerNameArray
                 }
@@ -358,6 +360,49 @@ function UpdateAnEmployeeManager(){
                         }
                     );
                 });
+        });
+    });
+}
+
+function GetEmployeesByManager(){
+    managerNameArray = [];
+    managerIdArray = [];
+    return new Promise((resolve, reject)=>{
+
+        // managerIdArray = ["NULL"];
+        db.query('SELECT * FROM employee WHERE employee.manager_id IS NULL ',  (error, response)=>{
+            if(error){
+                return reject(error);
+            }
+            response.forEach((employee) => {
+                if(employee.manager_id == null){
+                managerNameArray.push(employee.first_name + " " + employee.last_name);
+                managerIdArray.push(employee.id);
+                 }});
+            
+   
+            inquirer.prompt([
+                {
+                    name: 'chosenManager',
+                    type: 'rawlist',
+                    message: 'Choose New Manager to view their Employees',
+                    choices: managerNameArray
+                },
+            ])
+            .then(answers => {
+                let newManagerId = managerIdArray[managerNameArray.indexOf(answers.chosenManager)];
+                db.query('SELECT * FROM employee WHERE employee.manager_id = ? ', newManagerId, (error, response)=>{
+                    if(error){
+                        return reject(error);
+                    }
+                    console.log(`\n`);
+                            DoLine();
+                            console.log(`Employees of Manager: ${answers.chosenManager}`);
+                            console.table(response);
+                            DoLine();
+                            MainMenu();
+                });
+            });
         });
     });
 }
