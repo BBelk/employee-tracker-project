@@ -20,16 +20,19 @@ function DoLine(){
 }
 let db;
 async function Initialize(){
-db = await mysql.createConnection(
-{
-    host: 'localhost',
-    // MySQL username,
-    user: 'root',
-    // TODO: Add MySQL password
-    password: '',
-    database: 'employee_db'
-},
-console.log(`Connected to the employee_db database.`));
+    DoLine();
+    db = await mysql.createConnection(
+        {
+            host: 'localhost',
+            // MySQL username,
+            user: 'root',
+            // TODO: Add MySQL password
+            password: '',
+            database: 'employee_db'
+        },
+        // console.log(`Connected to the employee_db database.`));
+        console.log("WELCOME TO THE EMPLOYEE TRACKER"));
+DoLine();
 MainMenu();
 }
 
@@ -108,8 +111,8 @@ function ViewAllEmployees(){
                 return reject(error);
             }
 
-            console.log("MANAGER NAME ARRAY " + managerNameArray);
-            console.log("MANAGER ID ARRAY " + managerIdArray);
+            // console.log("MANAGER NAME ARRAY " + managerNameArray);
+            // console.log("MANAGER ID ARRAY " + managerIdArray);
            
     // "${managerNameArray[managerIdArray.indexOf(employee.manager_id)]}"
     db.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title AS job_title, department.name AS department, role.salary AS salary, employee.manager_id AS manager_id FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id ORDER BY id ASC;`, (error, response) => {
@@ -242,9 +245,9 @@ function AddAnEmployee(){
     .then(response => {
         let managerMaybeNull = "";
         managerMaybeNull = managerIdArray[managerNameArray.indexOf(response.employeeManager)];
-        console.log(roleArray + "THIS IS THE ROLE ARRAY");
+        // console.log(roleArray + "THIS IS THE ROLE ARRAY");
         response.employeeRole = roleArray.indexOf(response.employeeRole) + 1;
-        console.log(response.employeeRole + "THIS IS THE CHOSEN ROLE ARRAY INDEX");
+        // console.log(response.employeeRole + "THIS IS THE CHOSEN ROLE ARRAY INDEX");
         if(response.employeeManager != "NULL"){
             // managerMaybeNull = NULL;
         db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES("${response.employeeFirstName}", "${response.employeeLastName}", "${response.employeeRole}", "${managerMaybeNull}");`, (error, response) => {
@@ -283,7 +286,7 @@ function UpdateAnEmployeeRole(){
             if (error) throw error;
             let roleArray = [];
             response.forEach((role) => { roleArray.push(role.title); });
-            console.log("ROLE ARRAY: " + roleArray);
+            // console.log("ROLE ARRAY: " + roleArray);
 
             inquirer.prompt([
                 {
@@ -303,12 +306,12 @@ function UpdateAnEmployeeRole(){
                     let newTitleId, employeeId;
                     managerIdArray[managerNameArray.indexOf(answers.chosenManager)]
                     newTitleId = roleArray.indexOf(answers.chosenRole) + 1;
-                    console.log("CHOSEN ROLE ID IS " + newTitleId + "   " + answers.chosenRole);
-                    console.log("array role is " + roleArray.indexOf(answers.chosenRole) + 1);
+                    // console.log("CHOSEN ROLE ID IS " + newTitleId + "   " + answers.chosenRole);
+                    // console.log("array role is " + roleArray.indexOf(answers.chosenRole) + 1);
                   
                     employeeId = employeeArray.indexOf(answers.chosenEmployee) + 1;
-                    console.log("CHOSEN EMPLOYEE " + employeeId + "    " + answers.chosenEmployee);
-                    console.log("employee array is " + employeeArray.indexOf(answers.chosenEmployee) + 1);
+                    // console.log("CHOSEN EMPLOYEE " + employeeId + "    " + answers.chosenEmployee);
+                    // console.log("employee array is " + employeeArray.indexOf(answers.chosenEmployee) + 1);
                     
                     db.query(`UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`, [newTitleId, employeeId], (error) => {
                             if (error) throw error;
@@ -356,14 +359,14 @@ function UpdateAnEmployeeManager(){
                     let newManagerId, employeeId;
                     
                     newManagerId = managerIdArray[managerNameArray.indexOf(answers.chosenManager)];
-                    console.log(newManagerId + ": IS NEW MANAGER ID");
+                    // console.log(newManagerId + ": IS NEW MANAGER ID");
 
                     response.forEach((employee) => {
                         if (answers.chosenEmployee === `${employee.first_name}` + " " + `${employee.last_name}`) {
                             employeeId = employee.id;
                         }
                     });
-                    console.log('CHOSEN EMPLOYEE IS' + employeeId);
+                    // console.log('CHOSEN EMPLOYEE IS' + employeeId);
                     
                     db.query(`UPDATE employee SET employee.manager_id = ? WHERE employee.id = ?`, [newManagerId, employeeId], (error) => {
                             if (error) throw error;
