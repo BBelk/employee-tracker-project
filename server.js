@@ -52,6 +52,7 @@ const startQuestions = [
         'Update An Employee Manager',
         'View Employees by Manager',
         'View Employees by Department',
+        'View Budget by Department',
     ],
     message: 'Select an Option',
 }
@@ -72,6 +73,7 @@ function MainMenu(){
     if(response.doNext == "Update An Employee Manager"){UpdateAnEmployeeManager();}
     if(response.doNext == "View Employees by Manager"){GetEmployeesByManager();}
     if(response.doNext == "View Employees by Department"){GetEmployeesByDepartment();}
+    if(response.doNext == "View Budget by Department"){GetBudgetByDepartment();}
 });
 }
 
@@ -435,7 +437,6 @@ function GetEmployeesByDepartment(){
             ])
             .then(answers => {
                 let newDepartmentId = departmentArray.indexOf(answers.chosenDepartment) + 1;
-                console.log("NEW DEPARTMENT ID: " + newDepartmentId);
                 /////////////////////
                 db.query('SELECT employee.id,employee.first_name,employee.last_name,role.title, role.salary FROM employee JOIN role on employee.role_id = role.id WHERE role.department_id = ?;', newDepartmentId, (error, response1)=>{
                     if(error){
@@ -449,8 +450,52 @@ function GetEmployeesByDepartment(){
                             DoLine();
                             MainMenu();
                     
-            });
+                });
             });
         });
     });
+}
+
+function GetBudgetByDepartment(){
+    let departmentArray = [];
+    let departmentIdArray = [];
+    // managerIdArray = [];
+    return new Promise((resolve, reject)=>{
+
+        // managerIdArray = ["NULL"];
+        db.query('SELECT * FROM department',  (error, response)=>{
+            if(error){
+                return reject(error);
+            }
+            response.forEach((department) => { departmentArray.push(department.name);
+            departmentIdArray.push(department.id); });
+            
+            
+   
+            inquirer.prompt([
+                {
+                    name: 'chosenDepartment',
+                    type: 'rawlist',
+                    message: 'Choose Department to view its Budget',
+                    choices: departmentArray
+                },
+            ])
+            .then(answers => {
+                let newDepartmentId = departmentArray.indexOf(answers.chosenDepartment) + 1;
+                
+                        
+                        db.query('SELECT ROUND(SUM(role.salary), 2) as Total_Department_Budget FROM employee JOIN role on employee.role_id = role.id WHERE role.department_id = ? AND role.salary IS NOT NULL ', newDepartmentId, (error, response2)=>{
+                if(error){
+                    return reject(error);
+                }
+                console.log("\n");
+                DoLine();
+                console.table(response2);
+                DoLine();
+                MainMenu();
+                
+            });
+        });
+    });
+});
 }
