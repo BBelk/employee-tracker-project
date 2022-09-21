@@ -19,4 +19,4 @@
 
   ## Visuals
 
- ![Alt text](/Assets/employee-tracker-image.png "Image of the CMS in git bash")
+ ![Alt text](/assets/employee-tracker-image.png "Image of the CMS in git bash")
