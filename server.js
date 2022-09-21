@@ -42,9 +42,9 @@ const startQuestions = [
     name: 'doNext',
     type: 'rawlist',
     choices:[
-        'View All Departments', 
-        'View All Roles',
         'View All Employees',
+        'View All Roles',
+        'View All Departments', 
         'Add A Department', 
         'Add A Role', 
         'Add An Employee', 
@@ -63,9 +63,9 @@ Initialize();
 function MainMenu(){
     inquirer.prompt(startQuestions)
     .then(response => {
-    if(response.doNext == "View All Departments"){ViewAllDepartments();}
-    if(response.doNext == "View All Roles"){ViewAllRoles();}
-    if(response.doNext == "View All Employees"){ViewAllEmployees();}
+        if(response.doNext == "View All Employees"){ViewAllEmployees();}
+        if(response.doNext == "View All Roles"){ViewAllRoles();}
+        if(response.doNext == "View All Departments"){ViewAllDepartments();}
     if(response.doNext == "Add A Department"){AddADepartment();}
     if(response.doNext == "Add A Role"){AddARole();}
     if(response.doNext == "Add An Employee"){AddAnEmployee();}
